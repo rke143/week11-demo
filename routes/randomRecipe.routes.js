@@ -4,13 +4,14 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        const recipeQuery = 'SELECT id, recipeName, instructions FROM recipe ORDER BY RANDOM() LIMIT 1';
+        const recipeQuery = 'SELECT id, recipeName, instructions FROM recipe ORDER BY RANDOM() LIMIT 1;';
         const recipeResult = await db.query(recipeQuery);
         const selectedRecipe = recipeResult.rows[0];
 
-        const ingredientQuery = 'SELECT b.ingredientName FROM ingredient b INNER JOIN IngredientInRecipe c ON b.id = c.ingredientId WHERE c.recipeId = $1';
+        const ingredientQuery = 'SELECT b.ingredientName FROM ingredient b INNER JOIN IngredientInRecipe c ON b.id = c.ingredientId WHERE c.recipeId = $1;';
         const ingredientResult = await db.query(ingredientQuery, [selectedRecipe.id]);
-        const ingredients = ingredientResult.rows;
+        const ingredients = ingredientResult.rows.map( i => i.ingredientname );
+        
 
         res.json({ recipe: selectedRecipe, ingredients });
 
