@@ -4,10 +4,16 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        const recipe = await db.query('SELECT a.recipeName, a.instructions, b.ingredientName FROM recipe a INNER JOIN IngredientInRecipe c ON a.id = c.recipeId INNER JOIN ingredient b ON b.id = c.ingredientId ORDER BY RANDOM() LIMIT 1;');  
-        console.log(recipe.rows);
+        const recipeQuery = 'SELECT id, recipeName, instructions FROM recipe ORDER BY RANDOM() LIMIT 1';
+        const recipeResult = await db.query(recipeQuery);
+        const selectedRecipe = recipeResult.rows[0];
 
-        res.json(recipe.rows);
+        const ingredientQuery = 'SELECT b.ingredientName FROM ingredient b INNER JOIN IngredientInRecipe c ON b.id = c.ingredientId WHERE c.recipeId = $1';
+        const ingredientResult = await db.query(ingredientQuery, [selectedRecipe.id]);
+        const ingredients = ingredientResult.rows;
+
+        res.json({ recipe: selectedRecipe, ingredients });
+
     } catch (error) {
         console.error('Error fetching recipe:', error);
         res.status(500).json({ error: 'Internal Server Error' });
